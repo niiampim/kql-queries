@@ -1,0 +1,24 @@
+How to deal with 'Relop semantic error: SEM0026: The arguments array exceeded the allowed limit (allowed=10,000)...' error in KQL
+-----------------------------
+The error Relop semantic error: SEM0026: The arguments array exceeded the allowed limit (allowed=10,000) in KQL (Kusto Query Language) 
+occurs when you try to use a relational operator (like in(), has_any(), has_all(), etc.) with an array that exceeds the maximum allowed number of items. 
+In this case, the array contains more than 10,000 items, which is the current limit imposed by KQL.
+
+JOIN - RIGHTANTI
+let users_10000 = 
+IdentityInfo
+| where TimeGenerated > ago(30d)
+| where isnotempty(AccountUPN)
+| summarize by AccountUPN
+| order by AccountUPN asc
+| take 10000;
+let user_remain = 
+users_10000
+| join kind=rightanti (
+IdentityInfo
+| where TimeGenerated > ago(30d)
+| where isnotempty(AccountUPN)
+| summarize by AccountUPN
+) on AccountUPN
+| project AccountUPN
+| order by AccountUPN asc;
